@@ -87,8 +87,8 @@ def solve():
             df = remove_word(df, word)
             continue
 
-        for idx, (character, status) in enumerate(zip(word, result)):
-            df = eliminate(df, character, idx, status)
+        for jdx, (character, status) in enumerate(zip(word, result)):
+            df = eliminate(df, character, jdx, status)
 
         idx += 1
 
