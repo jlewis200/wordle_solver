@@ -19,6 +19,9 @@ ABSENT = "a"
 
 class AutoWordler:
 
+    def __init__(self):
+        self.vocabulary = pd.read_csv("5_letter_words.csv")
+
     def sample_word(self, df):
         """
         Return the most likely word from the candidates.
@@ -112,7 +115,7 @@ class AutoWordler:
         return df[mask]
 
     def solve(self):
-        df = pd.read_csv("5_letter_words.csv")
+        df = self.vocabulary.copy()
         idx = 0
 
         while idx < 6:

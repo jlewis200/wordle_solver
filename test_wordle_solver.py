@@ -20,10 +20,11 @@ class TestWordleSolver(unittest.TestCase):
         Generate a distribution of guesses-to-solve.
         """
         guess_counts = {}
+        auto_wordler = ws.AutoWordler()
 
         for wordle in self.wordles:
             print(wordle)
-            guess_counts[wordle] = self.get_guess_count(wordle)
+            guess_counts[wordle] = self.get_guess_count(wordle, auto_wordler)
 
         guess_counts = pd.DataFrame(guess_counts.items(), columns=["word", "guesses"])
         guess_counts = guess_counts.set_index("word", drop=True)
@@ -56,9 +57,8 @@ class TestWordleSolver(unittest.TestCase):
         plt.savefig("guess_distribution.png")
 
     @patch.object(ws.AutoWordler, "get_result")
-    def get_guess_count(self, wordle, mock_get_result):
+    def get_guess_count(self, wordle, auto_wordler, mock_get_result):
         mock_get_result.side_effect = lambda guess: get_result(guess, wordle)
-        auto_wordler = ws.AutoWordler()
         auto_wordler.solve()
         guesses = [call_args.args[0] for call_args in mock_get_result.call_args_list]
 
