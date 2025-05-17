@@ -1,0 +1,82 @@
+## ***************************************************************************
+## * LINES                                                                   *
+## ***************************************************************************
+## See https://matplotlib.org/api/artist_api.html#module-matplotlib.lines
+## for more information on line properties.
+lines.color:     grey                # has no affect on plot(); see axes.prop_cycle
+lines.markerfacecolor: grey        # the default marker face color
+lines.markeredgecolor: grey        # the default marker edge color
+
+## ***************************************************************************
+## * PATCHES                                                                 *
+## ***************************************************************************
+## Patches are graphical objects that fill 2D space, like polygons or circles.
+## See https://matplotlib.org/api/artist_api.html#module-matplotlib.patches
+## for more information on patch properties.
+patch.facecolor:      grey 
+patch.edgecolor:       grey # if forced, or patch is not filled
+
+## ***************************************************************************
+## * BOXPLOT                                                                 *
+## ***************************************************************************
+boxplot.flierprops.color:          grey 
+boxplot.flierprops.marker:          .
+boxplot.flierprops.markerfacecolor: grey
+boxplot.flierprops.markeredgecolor: grey
+boxplot.flierprops.markersize:      2
+boxplot.boxprops.color:     grey
+boxplot.whiskerprops.color:    grey 
+boxplot.capprops.color:    grey 
+boxplot.medianprops.color:     xkcd:cobalt
+boxplot.meanprops.color:           xkcd:cobalt
+boxplot.meanprops.marker:          o
+boxplot.meanprops.markerfacecolor: xkcd:cobalt
+boxplot.meanprops.markeredgecolor: xkcd:cobalt
+
+## ***************************************************************************
+## * FONT                                                                    *
+## ***************************************************************************
+## The font properties used by `text.Text`.
+## See https://matplotlib.org/api/font_manager_api.html for more information
+## on font properties.
+font.size:    40.0
+axes.titlesize:     40  # fontsize of the axes title
+axes.labelsize:     20  # fontsize of the x and y labels
+xtick.labelsize:    10  # fontsize of the tick labels
+ytick.labelsize:    10  # fontsize of the tick labels
+legend.fontsize:    20  # legend fontsize
+figure.titlesize:   40  # fontsize of the figure title
+
+## ***************************************************************************
+## * TEXT                                                                    *
+## ***************************************************************************
+## The text properties used by `text.Text`.
+## See https://matplotlib.org/api/artist_api.html#module-matplotlib.text
+## for more information on text properties
+text.color: grey
+
+## ***************************************************************************
+## * AXES                                                                    *
+## ***************************************************************************
+## Following are default face and edge colors, default tick sizes,
+## default font sizes for tick labels, and so on.  See
+## https://matplotlib.org/api/axes_api.html#module-matplotlib.axes
+axes.edgecolor:     grey # axes edge color
+axes.titleweight:   normal  # font weight of title
+axes.titlecolor:    xkcd:cobalt # color of the axes title, auto falls back to
+axes.labelweight:   normal  # weight of the x and y labels
+axes.labelcolor:    grey 
+axes.spines.bottom: True
+axes.spines.top:    False
+axes.spines.right:  False
+axes3d.grid:    True  # display grid on 3D axes
+
+## ***************************************************************************
+## * TICKS                                                                   *
+## ***************************************************************************
+## See https://matplotlib.org/api/axis_api.html#matplotlib.axis.Tick
+xtick.minor.pad:     3.4     # distance to the minor tick label in points
+xtick.color:         grey # color of the ticks
+ytick.minor.pad:     3.4     # distance to the minor tick label in points
+ytick.color:         grey # color of the ticks
+

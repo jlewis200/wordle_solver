@@ -3,7 +3,9 @@ import unittest
 from unittest.mock import patch
 from pprint import pprint
 import pandas as pd
+import matplotlib.pyplot as plt
 import wordle_solver as ws
+from plotting_utils import get_numeric_histogram
 
 
 class TestWordleSolver(unittest.TestCase):
@@ -25,11 +27,33 @@ class TestWordleSolver(unittest.TestCase):
 
         guess_counts = pd.DataFrame(guess_counts.items(), columns=["word", "guesses"])
         guess_counts = guess_counts.set_index("word", drop=True)
-        print(guess_counts)
 
-        value_counts = guess_counts.value_counts()
-        print(value_counts.sort_index())
-        breakpoint()
+        guess_counts = guess_counts.rename(
+            columns={"guesses": "guess_count_distribution"}
+        )
+        fig, *_ = get_numeric_histogram(
+            guess_counts["guess_count_distribution"],
+            bins=[
+                -1.4,
+                -0.6,
+                -0.4,
+                0.4,
+                0.6,
+                1.4,
+                1.6,
+                2.4,
+                2.6,
+                3.4,
+                3.6,
+                4.4,
+                4.6,
+                5.4,
+                5.6,
+                6.4,
+            ],
+        )
+
+        plt.savefig("guess_distribution.png")
 
     @patch.object(ws, "get_result")
     def get_guess_count(self, wordle, mock_get_result):
