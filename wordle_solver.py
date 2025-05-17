@@ -6,50 +6,57 @@ import pandas as pd
 
 """
 sample words according to probability
-eliminate words where characters don't exist
-eliminate words where characters are in the wrong position
-
 prioritize words with no duplicate characters?
+eplore/exploit ratio?
+  - use first guesses to eliminate characters
+  - use later guesses to attempt a solve
 """
 
 CORRECT = "c"
 PRESENT = "p"
 ABSENT = "a"
 
-possibilities = {}
-
-for idx in range(5):
-    possibilities[idx] = set(list(ascii_lowercase))
-
 
 def sample_word(df):
+    """
+    Return the most likely word from the candidates.
+    """
     return df["word"].loc[df["count"].idxmax()]
 
 
-def eliminate(df, character, index, status):
-    if status == CORRECT:
-        return eliminate_correct(df, character, index)
-    if status == PRESENT:
-        return eliminate_present(df, character, index)
-    if status == ABSENT:
-        return eliminate_absent(df, character, index)
-    raise ValueError("invalid status")
+def eliminate(df, result, word):
+    """
+    Eliminate words based on wordle feedback.
+    """
+    word_value_counts = defaultdict(lambda: 0)
+
+    for idx, (character, status) in enumerate(zip(word, result)):
+        if status == CORRECT:
+            df = eliminate_correct(df, character, idx)
+            word_value_counts[character] += 1
+
+    for idx, (character, status) in enumerate(zip(word, result)):
+        if status == PRESENT:
+            df = eliminate_present(df, character, idx)
+            df = eliminate_position(df, character, idx)
+            word_value_counts[character] += 1
+
+        if status == ABSENT:
+            # eliminate words with the character in any position
+            if word_value_counts[character] == 0:
+                df = eliminate_absent(df, character, idx)
+
+            # eliminate words with the character in the specified position
+            if word_value_counts[character] >= 0:
+                df = eliminate_position(df, character, idx)
+
+    return df
 
 
-def eliminate_correct(df, character, index):
-    def _eliminate_correct(word):
-        return word[index] == character
-
-    mask = df["word"].apply(_eliminate_correct)
-    return df[mask]
-
-
-def eliminate_present(df, character, index):
-    def _eliminate_present(word):
-        return character in word
-
-    mask = df["word"].apply(_eliminate_present)
-    df = df[mask]
+def eliminate_position(df, character, index):
+    """
+    Eliminate words where the character is present in the specified index.
+    """
 
     def _eliminate_position(word):
         return word[index] != character
@@ -58,7 +65,35 @@ def eliminate_present(df, character, index):
     return df[mask]
 
 
+def eliminate_correct(df, character, index):
+    """
+    Eliminate words which don't have the character in the specified index.
+    """
+
+    def _eliminate_correct(word):
+        return word[index] == character
+
+    mask = df["word"].apply(_eliminate_correct)
+    return df[mask]
+
+
+def eliminate_present(df, character, index):
+    """
+    Remove words which don't contain character.
+    """
+
+    def _eliminate_present(word):
+        return character in word
+
+    mask = df["word"].apply(_eliminate_present)
+    return df[mask]
+
+
 def eliminate_absent(df, character, index):
+    """
+    Eliminate words which contain the specified character.
+    """
+
     def _eliminate_absent(word):
         return character not in word
 
@@ -67,11 +102,17 @@ def eliminate_absent(df, character, index):
 
 
 def get_result(word):
+    """
+    Collect feedback for a guess.
+    """
     print(f"guess:  {word}")
     return input("status (c:correct, p:present, a:absent) or remove > ").lower()
 
 
 def remove_word(df, word):
+    """
+    Remove a specific word:  useful for skipping unlikely words like https/xhtml/etc.
+    """
     mask = df["word"] != word
     return df[mask]
 
@@ -88,53 +129,8 @@ def solve():
             df = remove_word(df, word)
             continue
 
-        for jdx, (character, status) in enumerate(zip(word, result)):
-            df = eliminate(df, character, jdx, status)
-
+        df = eliminate(df, result, word)
         idx += 1
-
-
-def _get_result(guess, wordle):
-    result = [None] * 5
-    wordle_value_counts = pd.Series(list(wordle)).value_counts()
-    guess_value_counts = defaultdict(lambda: 0)
-
-    for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
-        if guess_ == wordle_:
-            result[idx] = "c"
-            guess_value_counts[guess_] += 1
-
-    for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
-        if result[idx] is not None:
-            continue
-
-        if (
-            guess_ in wordle
-            and guess_value_counts[guess_] < wordle_value_counts[guess_]
-        ):
-            result[idx] = "p"
-            guess_value_counts[guess_] += 1
-
-        else:
-            result[idx] = "a"
-
-    return "".join(result)
-
-
-# def _get_result(guess, wordle):
-#    result = ""
-#
-#    for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
-#        if guess_ == wordle_:
-#            result += "c"
-#
-#        elif guess_ in wordle:
-#            result += "p"
-#
-#        else:
-#            result += "a"
-#
-#    return result
 
 
 if __name__ == "__main__":

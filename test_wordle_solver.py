@@ -1,3 +1,4 @@
+from collections import defaultdict
 import unittest
 from unittest.mock import patch
 from pprint import pprint
@@ -13,6 +14,9 @@ class TestWordleSolver(unittest.TestCase):
     wordles = list(map(lambda x: x.strip().lower(), wordles))
 
     def test_solve_distribution(self):
+        """
+        Generate a distribution of guesses-to-solve.
+        """
         guess_counts = {}
 
         for wordle in self.wordles:
@@ -29,35 +33,140 @@ class TestWordleSolver(unittest.TestCase):
 
     @patch.object(ws, "get_result")
     def get_guess_count(self, wordle, mock_get_result):
-        guess_count = 0
-
-        def get_result(guess):
-            # print(guess)
-            # return self._get_result(guess, wordle)
-            return ws._get_result(guess, wordle)
-
-        mock_get_result.side_effect = get_result
+        mock_get_result.side_effect = lambda guess: get_result(guess, wordle)
         ws.solve()
-
         guesses = [call_args.args[0] for call_args in mock_get_result.call_args_list]
 
         try:
             return 1 + guesses.index(wordle)
+
         except ValueError:
             return -1
 
-    def test_get_result(self):
+
+class TestGetResult(unittest.TestCase):
+    """
+    Ensure get_result() matches with actual wordle scoring.
+    """
+
+    def test_get_result_banal(self):
+        """
+        Test case data from:
+        https://www.reddit.com/r/wordle/comments/ry49ne/illustration_of_what_happens_when_your_guess_has/
+        """
         wordle = "banal"
 
         self.assertEqual(
-            ws._get_result("annal", wordle),
+            get_result("annal", wordle),
             "paccc",
         )
         self.assertEqual(
-            ws._get_result("union", wordle),
+            get_result("union", wordle),
             "apaaa",
         )
         self.assertEqual(
-            ws._get_result("alloy", wordle),
+            get_result("alloy", wordle),
             "ppaaa",
         )
+
+    def test_get_result_click(self):
+        """
+        Test case data from:
+        https://wordfinder.yourdictionary.com/blog/can-letters-repeat-in-wordle-a-closer-look-at-the-rules/
+        """
+        wordle = "click"
+        self.assertEqual(
+            get_result("humor", wordle),
+            "aaaaa",
+        )
+        self.assertEqual(
+            get_result("dicey", wordle),
+            "appaa",
+        )
+        self.assertEqual(
+            get_result("clasp", wordle),
+            "ccaaa",
+        )
+        self.assertEqual(
+            get_result("clink", wordle),
+            "cccac",
+        )
+        self.assertEqual(
+            get_result("click", wordle),
+            "ccccc",
+        )
+
+    def test_get_result_elude(self):
+        """
+        Test case data from:
+        https://wordfinder.yourdictionary.com/blog/can-letters-repeat-in-wordle-a-closer-look-at-the-rules/
+        """
+        wordle = "elude"
+        self.assertEqual(
+            get_result("crane", wordle),
+            "aaaac",
+        )
+        self.assertEqual(
+            get_result("hoist", wordle),
+            "aaaaa",
+        )
+        self.assertEqual(
+            get_result("bulky", wordle),
+            "appaa",
+        )
+        self.assertEqual(
+            get_result("ledge", wordle),
+            "pppac",
+        )
+        self.assertEqual(
+            get_result("elude", wordle),
+            "ccccc",
+        )
+
+    def test_get_result_close(self):
+        """
+        Test case data from: https://stackoverflow.com/questions/71324956/wordle-implementation-dealing-with-duplicate-letters-edge-case
+        """
+        wordle = "close"
+        self.assertEqual(
+            get_result("cheer", wordle),
+            "capaa",
+        )
+        self.assertEqual(
+            get_result("cocks", wordle),
+            "cpaap",
+        )
+        self.assertEqual(
+            get_result("leave", wordle),
+            "paaac",
+        )
+
+
+def get_result(guess, wordle):
+    """
+    Simulate the wordle feedback for a guess.
+    """
+    result = [None] * 5
+    wordle_value_counts = pd.Series(list(wordle)).value_counts()
+    guess_value_counts = defaultdict(lambda: 0)
+
+    for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
+        if guess_ == wordle_:
+            result[idx] = "c"
+            guess_value_counts[guess_] += 1
+
+    for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
+        if result[idx] is not None:
+            continue
+
+        if (
+            guess_ in wordle
+            and guess_value_counts[guess_] < wordle_value_counts[guess_]
+        ):
+            result[idx] = "p"
+            guess_value_counts[guess_] += 1
+
+        else:
+            result[idx] = "a"
+
+    return "".join(result)
