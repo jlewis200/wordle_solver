@@ -22,13 +22,13 @@ class AutoWordler:
     def __init__(self):
         self.vocabulary = pd.read_csv("5_letter_words.csv")
 
-    def sample_word(self, df):
+    def sample_word(self):
         """
         Return the most likely word from the candidates.
         """
-        return df["word"].loc[df["count"].idxmax()]
+        return self.df["word"].loc[self.df["count"].idxmax()]
 
-    def eliminate(self, df, result, word):
+    def eliminate(self, result, word):
         """
         Eliminate words based on wordle feedback.
         """
@@ -36,27 +36,25 @@ class AutoWordler:
 
         for idx, (character, status) in enumerate(zip(word, result)):
             if status == CORRECT:
-                df = self.eliminate_correct(df, character, idx)
+                self.eliminate_correct(character, idx)
                 word_value_counts[character] += 1
 
         for idx, (character, status) in enumerate(zip(word, result)):
             if status == PRESENT:
-                df = self.eliminate_present(df, character, idx)
-                df = self.eliminate_position(df, character, idx)
+                self.eliminate_present(character, idx)
+                self.eliminate_position(character, idx)
                 word_value_counts[character] += 1
 
             if status == ABSENT:
                 # eliminate words with the character in any position
                 if word_value_counts[character] == 0:
-                    df = self.eliminate_absent(df, character, idx)
+                    self.eliminate_absent(character, idx)
 
                 # eliminate words with the character in the specified position
                 if word_value_counts[character] >= 0:
-                    df = self.eliminate_position(df, character, idx)
+                    self.eliminate_position(character, idx)
 
-        return df
-
-    def eliminate_position(self, df, character, index):
+    def eliminate_position(self, character, index):
         """
         Eliminate words where the character is present in the specified index.
         """
@@ -64,10 +62,10 @@ class AutoWordler:
         def _eliminate_position(word):
             return word[index] != character
 
-        mask = df["word"].apply(_eliminate_position)
-        return df[mask]
+        mask = self.df["word"].apply(_eliminate_position)
+        self.df = self.df[mask]
 
-    def eliminate_correct(self, df, character, index):
+    def eliminate_correct(self, character, index):
         """
         Eliminate words which don't have the character in the specified index.
         """
@@ -75,10 +73,10 @@ class AutoWordler:
         def _eliminate_correct(word):
             return word[index] == character
 
-        mask = df["word"].apply(_eliminate_correct)
-        return df[mask]
+        mask = self.df["word"].apply(_eliminate_correct)
+        self.df = self.df[mask]
 
-    def eliminate_present(self, df, character, index):
+    def eliminate_present(self, character, index):
         """
         Remove words which don't contain character.
         """
@@ -86,10 +84,10 @@ class AutoWordler:
         def _eliminate_present(word):
             return character in word
 
-        mask = df["word"].apply(_eliminate_present)
-        return df[mask]
+        mask = self.df["word"].apply(_eliminate_present)
+        self.df = self.df[mask]
 
-    def eliminate_absent(self, df, character, index):
+    def eliminate_absent(self, character, index):
         """
         Eliminate words which contain the specified character.
         """
@@ -97,8 +95,8 @@ class AutoWordler:
         def _eliminate_absent(word):
             return character not in word
 
-        mask = df["word"].apply(_eliminate_absent)
-        return df[mask]
+        mask = self.df["word"].apply(_eliminate_absent)
+        self.df = self.df[mask]
 
     def get_result(self, word):
         """
@@ -107,26 +105,26 @@ class AutoWordler:
         print(f"guess:  {word}")
         return input("status (c:correct, p:present, a:absent) or remove > ").lower()
 
-    def remove_word(self, df, word):
+    def remove_word(self, word):
         """
         Remove a specific word:  useful for skipping unlikely words like https/xhtml/etc.
         """
-        mask = df["word"] != word
-        return df[mask]
+        mask = self.df["word"] != word
+        self.df = self.df[mask]
 
     def solve(self):
-        df = self.vocabulary.copy()
+        self.df = self.vocabulary.copy()
         idx = 0
 
         while idx < 6:
-            word = self.sample_word(df)
+            word = self.sample_word()
             result = self.get_result(word)
 
             if "remove" == result:
-                df = self.remove_word(df, word)
+                df = self.remove_word(word)
                 continue
 
-            df = self.eliminate(df, result, word)
+            self.eliminate(result, word)
             idx += 1
 
 
