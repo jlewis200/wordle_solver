@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from collections import defaultdict
 from string import ascii_lowercase
 import pandas as pd
 
@@ -91,6 +92,49 @@ def solve():
             df = eliminate(df, character, jdx, status)
 
         idx += 1
+
+
+def _get_result(guess, wordle):
+    result = [None] * 5
+    wordle_value_counts = pd.Series(list(wordle)).value_counts()
+    guess_value_counts = defaultdict(lambda: 0)
+
+    for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
+        if guess_ == wordle_:
+            result[idx] = "c"
+            guess_value_counts[guess_] += 1
+
+    for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
+        if result[idx] is not None:
+            continue
+
+        if (
+            guess_ in wordle
+            and guess_value_counts[guess_] < wordle_value_counts[guess_]
+        ):
+            result[idx] = "p"
+            guess_value_counts[guess_] += 1
+
+        else:
+            result[idx] = "a"
+
+    return "".join(result)
+
+
+# def _get_result(guess, wordle):
+#    result = ""
+#
+#    for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
+#        if guess_ == wordle_:
+#            result += "c"
+#
+#        elif guess_ in wordle:
+#            result += "p"
+#
+#        else:
+#            result += "a"
+#
+#    return result
 
 
 if __name__ == "__main__":

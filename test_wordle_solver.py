@@ -33,7 +33,8 @@ class TestWordleSolver(unittest.TestCase):
 
         def get_result(guess):
             # print(guess)
-            return self._get_result(guess, wordle)
+            # return self._get_result(guess, wordle)
+            return ws._get_result(guess, wordle)
 
         mock_get_result.side_effect = get_result
         ws.solve()
@@ -45,17 +46,18 @@ class TestWordleSolver(unittest.TestCase):
         except ValueError:
             return -1
 
-    def _get_result(self, guess, wordle):
-        result = ""
+    def test_get_result(self):
+        wordle = "banal"
 
-        for idx, (guess_, wordle_) in enumerate(zip(guess, wordle)):
-            if guess_ == wordle_:
-                result += "c"
-
-            elif guess_ in wordle:
-                result += "p"
-
-            else:
-                result += "a"
-
-        return result
+        self.assertEqual(
+            ws._get_result("annal", wordle),
+            "paccc",
+        )
+        self.assertEqual(
+            ws._get_result("union", wordle),
+            "apaaa",
+        )
+        self.assertEqual(
+            ws._get_result("alloy", wordle),
+            "ppaaa",
+        )
