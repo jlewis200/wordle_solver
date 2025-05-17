@@ -55,10 +55,11 @@ class TestWordleSolver(unittest.TestCase):
 
         plt.savefig("guess_distribution.png")
 
-    @patch.object(ws, "get_result")
+    @patch.object(ws.AutoWordler, "get_result")
     def get_guess_count(self, wordle, mock_get_result):
         mock_get_result.side_effect = lambda guess: get_result(guess, wordle)
-        ws.solve()
+        auto_wordler = ws.AutoWordler()
+        auto_wordler.solve()
         guesses = [call_args.args[0] for call_args in mock_get_result.call_args_list]
 
         try:
